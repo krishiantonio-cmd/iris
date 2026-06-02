@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Clayworks x IRIS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a08;--fg:#f0ede6;--fg-dim:#6b6860;--fg-mid:#9e9b94;
+  --accent:#c8b89a;--rule:rgba(240,237,230,0.1);
+  --serif:'EB Garamond',Georgia,serif;--mono:'DM Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:var(--serif);overflow:hidden}
+.deck{width:100vw;height:100vh;position:relative}
+.slide{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  padding:clamp(1.8rem,4vw,4rem) clamp(2rem,7vw,8rem);
+  opacity:0;pointer-events:none;transition:opacity 0.4s ease;overflow:hidden;
+}
+.slide.active{opacity:1;pointer-events:all}
+.topbar{
+  flex-shrink:0;display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:1.2rem;border-bottom:0.5px solid var(--rule);
+  font-family:var(--mono);font-size:10px;letter-spacing:0.08em;
+  color:var(--fg-dim);text-transform:uppercase;margin-bottom:2rem;
+}
+.footer{
+  flex-shrink:0;margin-top:auto;padding-top:1.2rem;
+  border-top:0.5px solid var(--rule);display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10px;color:var(--fg-dim);
+}
+.slide-body{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center;min-height:0}
+.kicker{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--fg-dim);text-transform:uppercase;margin-bottom:1rem}
+h1{font-size:clamp(2.4rem,5.5vw,5.2rem);font-weight:400;line-height:1.05;letter-spacing:-0.02em;margin-bottom:1rem}
+h1 em{font-style:italic;color:var(--accent)}
+.sub{font-size:clamp(0.9rem,1.5vw,1.12rem);color:var(--fg-mid);line-height:1.65;max-width:52ch}
+.col-label{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--fg-dim);text-transform:uppercase;margin-bottom:1.2rem}
+.row{padding:1.1rem 0;border-top:0.5px solid var(--rule)}
+.row-title{font-size:1rem;margin-bottom:0.25rem}
+.row-body{font-size:0.87rem;color:var(--fg-mid);line-height:1.6}
+.step{display:grid;grid-template-columns:2rem 1fr;gap:0.75rem;padding:0.85rem 0;border-top:0.5px solid var(--rule)}
+.step-num{font-family:var(--mono);font-size:9px;color:var(--fg-dim);padding-top:0.25rem}
+.step-title{font-size:0.95rem;margin-bottom:0.15rem}
+.step-body{font-size:0.84rem;color:var(--fg-mid);line-height:1.58}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:0.5rem}
+.stat{padding:1.2rem;border:0.5px solid var(--rule)}
+.stat-val{font-size:2rem;font-weight:400;letter-spacing:-0.02em;margin-bottom:0.2rem}
+.stat-label{font-family:var(--mono);font-size:9px;color:var(--fg-dim);letter-spacing:0.1em;text-transform:uppercase;line-height:1.5}
+.testimonial{padding:1.5rem;border:0.5px solid var(--rule);margin-bottom:1rem}
+.testimonial-text{font-size:0.95rem;color:var(--fg-mid);line-height:1.65;font-style:italic;margin-bottom:0.75rem}
+.testimonial-author{font-family:var(--mono);font-size:9px;color:var(--fg-dim);letter-spacing:0.08em;text-transform:uppercase}
+.big-num{font-size:clamp(6rem,14vw,12rem);font-weight:400;line-height:0.9;letter-spacing:-0.04em;color:var(--fg)}
+.big-label{font-size:clamp(1.1rem,2.5vw,2rem);color:var(--fg-mid);margin-top:0.75rem;line-height:1.3}
+.mono-note{margin-top:1.5rem;font-family:var(--mono);font-size:10px;color:var(--fg-dim);line-height:1.8;letter-spacing:0.04em}
+.q-block{padding:1.2rem 0;border-top:0.5px solid var(--rule)}
+.q-label{font-family:var(--mono);font-size:9.5px;color:var(--fg-dim);letter-spacing:0.1em;margin-bottom:0.4rem}
+.q-text{font-size:1.05rem;line-height:1.4}
+.q-text em{font-style:italic;color:var(--accent)}
+.nav{position:fixed;bottom:2rem;right:2rem;display:flex;gap:0.75rem;z-index:100}
+.nav button{
+  background:none;border:0.5px solid var(--rule);color:var(--fg-dim);
+  font-family:var(--mono);font-size:10px;padding:0.5rem 1rem;
+  cursor:pointer;transition:all 0.2s;letter-spacing:0.06em;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav button:hover,.nav button:active{border-color:var(--accent);color:var(--accent)}
+
+@media(max-width:700px){
+  html,body{overflow:auto;height:auto}
+  .deck{height:auto;overflow:visible}
+  .slide{
+    position:relative;inset:auto;display:none;flex-direction:column;
+    padding:2rem 1.5rem;opacity:1;pointer-events:all;
+    overflow:visible;min-height:100svh;
+  }
+  .slide.active{display:flex}
+  .slide-body{grid-template-columns:1fr;gap:2.5rem;align-items:start;flex:none;margin-bottom:2rem}
+  h1{font-size:2.6rem}
+  .sub{font-size:1rem;max-width:100%}
+  .big-num{font-size:5.5rem}
+  .big-label{font-size:1.3rem}
+  .q-text{font-size:1rem}
+  .row-body,.step-body{font-size:0.9rem}
+  .stat-val{font-size:1.6rem}
+  .topbar{margin-bottom:1.5rem;font-size:9px}
+  .footer{margin-top:2rem}
+  .nav{position:fixed;bottom:calc(1.2rem + env(safe-area-inset-bottom));right:1.2rem}
+  .nav button{font-size:11px;padding:0.55rem 1.1rem}
+}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- SLIDE 1: The pitch -->
+<div class="slide active" id="s1">
+  <div class="topbar"><span>CLAYWORKS x IRIS</span><span>JUNE 2026</span></div>
+  <div class="slide-body">
+    <div>
+      <div class="kicker">For the IRIS team</div>
+      <h1>We fill<br>your pipe&shy;line.<br><em>Guaranteed.</em></h1>
+      <p class="sub" style="margin-top:1rem">Clayworks is a top 10 UK B2B pipeline growth agency. We combine AI, intent signals, and outbound expertise to deliver qualified meetings every month. Guaranteed minimum of 5 per month, or we keep running until we do.</p>
+      <div style="margin-top:2rem;display:flex;gap:2.5rem;flex-wrap:wrap">
+        <div>
+          <div style="font-size:1.6rem;font-weight:400;letter-spacing:-0.02em">4,500+</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--fg-dim);letter-spacing:0.1em;text-transform:uppercase;margin-top:0.2rem">Meetings booked</div>
+        </div>
+        <div>
+          <div style="font-size:1.6rem;font-weight:400;letter-spacing:-0.02em">16x</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--fg-dim);letter-spacing:0.1em;text-transform:uppercase;margin-top:0.2rem">Avg. ROI</div>
+        </div>
+        <div>
+          <div style="font-size:1.6rem;font-weight:400;letter-spacing:-0.02em">68%</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--fg-dim);letter-spacing:0.1em;text-transform:uppercase;margin-top:0.2rem">More positive replies</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="col-label">What we do for IRIS</div>
+      <div class="row">
+        <div class="row-title">Find the right buyers</div>
+        <div class="row-body">We track signals specific to IRIS: contact centres posting agent roles, B2B SaaS platforms adding voice features, defence and motorsport procurement cycles, hardware OEMs evaluating embedded audio. Each product line gets its own ICP and target list.</div>
+      </div>
+      <div class="row">
+        <div class="row-title">Reach them with the right message</div>
+        <div class="row-body">Every touch is personalised to a real signal about that prospect. Not a template. Written as if it came from IRIS, referencing why the timing is right for them specifically. Email, LinkedIn, phone, AI voice notes.</div>
+      </div>
+      <div class="row">
+        <div class="row-title">Hand you a booked meeting</div>
+        <div class="row-body">Not leads. Not MQLs. Confirmed, criteria-matched meetings on the IRIS team's calendar. Your people show up to a conversation that is already warm.</div>
+      </div>
+      <div class="row" style="border-bottom:0.5px solid var(--rule)">
+        <div class="row-title">Already proven in this space</div>
+        <div class="row-body">We work with companies selling into contact centres, enterprise IT, and mission-critical industries. The outbound playbook for hardware and SDK sales is different from SaaS. We know the difference.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>CLAYWORKS x IRIS</span><span>01 / 04</span></div>
+</div>
+
+<!-- SLIDE 2: The process -->
+<div class="slide" id="s2">
+  <div class="topbar"><span>CLAYWORKS x IRIS</span><span>02 · THE PROCESS</span></div>
+  <div class="slide-body">
+    <div>
+      <div class="kicker">How it works</div>
+      <h1>Signal.<br>Enrich.<br><em>Close.</em></h1>
+      <p class="sub" style="margin-top:1rem">Most outbound fails because it ignores timing. We track real buying signals so every message IRIS sends lands when it matters, not when it's convenient for us.</p>
+      <div style="margin-top:2rem;padding:1.2rem;border:0.5px solid var(--rule)">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--accent);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.6rem">What signals we watch for IRIS</div>
+        <div style="font-size:0.87rem;color:var(--fg-mid);line-height:1.7">
+          Contact centres posting high-volume agent or CX roles<br>
+          UCaaS and CCaaS platforms announcing voice feature launches<br>
+          Defence and motorsport procurement cycles opening<br>
+          Hardware OEMs evaluating or refreshing audio components<br>
+          Enterprise IT tenders mentioning noise cancellation or audio quality
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="col-label">The five steps</div>
+      <div class="step">
+        <div class="step-num">01</div>
+        <div><div class="step-title">ICP workshop</div><div class="step-body">We define the ideal prospect for each product · Clarity, SDK, VIPER · with IRIS's team before anything is written or sent.</div></div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div><div class="step-title">Signal monitoring</div><div class="step-body">750k+ prospects identified across 25+ markets. We score and rank accounts in real time by buying likelihood using 12,000+ signals detected weekly.</div></div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div><div class="step-title">Clay-powered enrichment</div><div class="step-body">100+ data providers stacked in waterfalls. Every contact verified, every company record current before a single message goes out.</div></div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div><div class="step-title">Hyper-personalized outreach</div><div class="step-body">AI-assisted, human-finished. Email, LinkedIn, phone, AI voice notes · 7 channels, one coordinated cadence per product line. Each message references a real signal about that prospect.</div></div>
+      </div>
+      <div class="step" style="border-bottom:0.5px solid var(--rule)">
+        <div class="step-num">05</div>
+        <div><div class="step-title">Meeting delivered</div><div class="step-body">Confirmed, criteria-matched meetings land on IRIS's calendar. IRIS's team shows up. Clayworks keeps running until the monthly minimum is met.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>CLAYWORKS x IRIS</span><span>02 / 04</span></div>
+</div>
+
+<!-- SLIDE 3: Results and proof -->
+<div class="slide" id="s3">
+  <div class="topbar"><span>CLAYWORKS x IRIS</span><span>03 · RESULTS</span></div>
+  <div class="slide-body">
+    <div>
+      <div class="kicker">What clients say</div>
+      <h1>Real<br>results,<br><em>real clients.</em></h1>
+      <div class="testimonial" style="margin-top:1.5rem">
+        <div class="testimonial-text">"Clayworks surfaced signals we never would have spotted ourselves. Within weeks, our deal flow tripled and it was all high-quality introductions."</div>
+        <div class="testimonial-author">Bilal Mir · CEO, Carter Capital</div>
+      </div>
+      <div class="testimonial">
+        <div class="testimonial-text">"The Clayworks team turned intent signals into real meetings in weeks. Their AI-led approach meant we didn't just scale outreach, we scaled qualified conversations."</div>
+        <div class="testimonial-author">Adam Liusie · CEO, Apta AI</div>
+      </div>
+      <div class="testimonial" style="margin-bottom:0">
+        <div class="testimonial-text">"Before Clayworks, our outreach was manual and unpredictable. Within 6 weeks, we were booking 4x more meetings without adding any headcount."</div>
+        <div class="testimonial-author">Natasha Sanders · Founder, Mu Motion</div>
+      </div>
+    </div>
+    <div>
+      <div class="col-label">By the numbers</div>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-val">4,500+</div>
+          <div class="stat-label">Qualified meetings booked across all clients</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">16x</div>
+          <div class="stat-label">Average ROI across all accounts</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">£1.5m</div>
+          <div class="stat-label">Revenue attributed to closed-won deals</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">68%</div>
+          <div class="stat-label">More positive replies than industry average</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">750k+</div>
+          <div class="stat-label">Prospects identified across 25+ markets</div>
+        </div>
+        <div class="stat">
+          <div class="stat-val">6 wks</div>
+          <div class="stat-label">Avg. time to first qualified meeting</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>CLAYWORKS x IRIS</span><span>03 / 04</span></div>
+</div>
+
+<!-- SLIDE 4: Guarantee and next step -->
+<div class="slide" id="s4">
+  <div class="topbar"><span>CLAYWORKS x IRIS</span><span>04 · NEXT STEP</span></div>
+  <div class="slide-body">
+    <div>
+      <div class="kicker">The guarantee</div>
+      <div class="big-num">5</div>
+      <div class="big-label">qualified meetings<br>per month, guaranteed.</div>
+      <div class="mono-note">
+        Booked on IRIS's calendar.<br>
+        Matched to criteria you define.<br>
+        No lock-in. No long contracts.<br>
+        Or Clayworks runs until they land.
+      </div>
+    </div>
+    <div>
+      <div class="col-label">Three things worth a call</div>
+      <div class="q-block">
+        <div class="q-label">Q · 01</div>
+        <div class="q-text">Which product is the <em>biggest growth priority</em> right now: Clarity for contact centres, the SDK for platforms, or VIPER for hardware partners?</div>
+      </div>
+      <div class="q-block">
+        <div class="q-label">Q · 02</div>
+        <div class="q-text">Is the current pipeline mostly <em>inbound and partnerships</em>, and where does outbound fit in the sales motion today?</div>
+      </div>
+      <div class="q-block" style="border-bottom:0.5px solid var(--rule)">
+        <div class="q-label">Q · 03</div>
+        <div class="q-text">What does a <em>perfect meeting</em> look like for IRIS: industry, role, company size, buying stage?</div>
+      </div>
+      <div style="margin-top:1.5rem">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--fg-dim);margin-bottom:0.3rem">20 minutes. No deck. Just the conversation.</div>
+        <div style="font-size:1rem;color:var(--fg-mid)">Iya Antonio · Clayworks</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:0.2rem">iya@clayworks.io</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><span>CLAYWORKS x IRIS</span><span>04 / 04</span></div>
+</div>
+
+</div>
+
+<div class="nav">
+  <button id="prev" onclick="go(-1)">← prev</button>
+  <button id="next" onclick="go(1)">next →</button>
+</div>
+
+<script>
+let cur=1,total=4;
+function go(d){
+  document.getElementById('s'+cur).classList.remove('active');
+  cur=Math.max(1,Math.min(total,cur+d));
+  document.getElementById('s'+cur).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('prev').style.opacity=cur===1?'0.3':'1';
+  document.getElementById('next').style.opacity=cur===total?'0.3':'1';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ')go(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);
+});
+var ts=0;
+document.addEventListener('touchstart',e=>{ts=e.touches[0].clientX;},{passive:true});
+document.addEventListener('touchend',e=>{
+  var diff=ts-e.changedTouches[0].clientX;
+  if(Math.abs(diff)>50){diff>0?go(1):go(-1);}
+},{passive:true});
+go(0);
+</script>
+</body>
+</html>
